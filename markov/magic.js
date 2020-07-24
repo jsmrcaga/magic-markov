@@ -3,18 +3,31 @@ class Card {
 		this.count = 0;
 		this.name = name;
 		this.counters = {};
-		this.probs = {};
+		this.probs = [];
 	}
 
 	compute_probs() {
 		let total = Object.values(this.counters).reduce((s,v) => s + v.count, 0);
 		for(let card of Object.values(this.counters)) {
-			this.probs[card.card] = card.count / total;
+			this.probs.push({
+				card: card.card,
+				prob: card.count / total
+			});
 		}
+
+		this.probs = this.probs.sort((a, b) => a.prob - b.prob);
 	}
 
 	next() {
-		
+		let rand = Math.random();
+		let probsum = 0;
+		for(let p of this.probs) {
+			if(p.prob + probsum > rand) {
+				return p.card;
+			}
+			probsum += p.prob;
+		}
+		return null;
 	}
 }
 
@@ -25,53 +38,45 @@ class Counter {
 	}
 }
 
-function* Markov(cards) {
-	let currentCard = cards[Math.floor(Math.random() * cards.length)];
-	yield currentCard.next()
+function* MarkovDeck(count, card, cards) {
+	// First card is requested card
+	currentCard = cards[card];
+	for(let i = 0; i < count; i++) {
+		yield currentCard;
+		// Currentcaard.next() chooses the next card based on markov chain
+		let next_card = currentCard.next(); 
+		currentCard = cards[next_card];
+	}
 }
 
-function compute({ decks=[], cards={} }) {
+function compute(decks=[]) {
+	let cards = {};
 	for(let deck of decks) {
+		// Create cards
 		for(let card of deck) {
-			if(card.toLowerCase() === 'plains' || card.toLowerCase() === 'swamp') {
-				continue;
-			}
-
-			if(cards[card]) {
-				cards[card].count++;
-			} else {
+			if(!cards[card]) {
 				cards[card] = new Card(card);
 			}
 		}
 
 		for(let card of deck) {
-			if(card.toLowerCase() === 'plains' || card.toLowerCase() === 'swamp') {
-				continue;
-			}
-
 			for(let subcard of deck) {
-				if(card.toLowerCase() === 'plains' || card.toLowerCase() === 'swamp') {
-					continue;
-				}
-
+				// Should count itself (allows for having multiple of the same card)
 				if(cards[card].counters[subcard]) {
 					cards[card].counters[subcard].count++;
 				} else {
 					cards[card].counters[subcard] = new Counter({ card: subcard });
 				}
-			}	
+			}
 		}
 	}
 
-	cards.forEach(card => card.compute_probs());
+	Object.values(cards).forEach(card => card.compute_probs());
 	return cards;
 }
 
-function markov(cards) {
-
-}
 
 module.exports = {
 	compute,
-	markov
-}
+	MarkovDeck
+};

@@ -1,0 +1,9 @@
+# You can put all the names you want the algorithm to ignore here
+# it's easier than typing `-i swamp -i plains -i "castle locthwain"
+
+swamp
+plains
+castle locthwain
+fabled passage 
+godless shrine
+temple of silence

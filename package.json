@@ -1,0 +1,23 @@
+{
+  "name": "magic-markov",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jsmrcaga/magic-markov.git"
+  },
+  "author": "Jo Colina <jo@jocolina.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jsmrcaga/magic-markov/issues"
+  },
+  "homepage": "https://github.com/jsmrcaga/magic-markov#readme",
+  "dependencies": {
+    "argumentate": "^2.0.0",
+    "fishingrod": "^4.1.0"
+  }
+}
