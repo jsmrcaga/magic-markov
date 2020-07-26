@@ -15,7 +15,8 @@ const { options, variables } = argumentate(process.argv.slice(2), {
 	i: 'ignore',
 	g: 'ignore-file',
 	p: 'preview',
-	m: 'format'
+	m: 'format',
+	r: 'rounds'
 });
 
 // Get deck ids
@@ -55,6 +56,10 @@ const dichotomic = (iterations=1, decks) => {
 	console.log('\tCreating decks for', iterations, 'iterations');
 	if(iterations === 1) {
 		let deck = create_deck(decks, options.count, options.card);
+		if(options.rounds) {
+			return deck;
+		}
+
 		let formatted = format(deck, options.format || 'plain');
 		
 		let delta = (Date.now() - now) / 1000;
@@ -81,11 +86,32 @@ const dichotomic = (iterations=1, decks) => {
 		}
 	}
 
+	if(options.plot) {
+		iterations = +options.plot;
+	}
+
 	let new_decks = [];
 	for(let i = 0; i < iterations; i++) {
 		// No starting card to not bias the probs
 		let new_deck = create_deck(decks, options.count);
 		new_decks.push(new_deck);
+	}
+
+	if(options.plot) {
+		let cards = {};
+		for(let deck of new_decks) {
+			Object.values(deck.cards).forEach(card => {
+				if(!cards[card.name]) {
+					cards[card.name] = card.count;
+				} else {
+					cards[card.name] += card.count;
+				}
+			});
+		}
+		console.log('---------- FREQUENCIES --------\n\n');
+		console.log(Object.entries(cards).map(([k, v]) => `${v}\t${k}`).join('\n'));
+		console.log('\n\n------------------');
+		return;
 	}
 
 	return dichotomic(Math.floor(iterations/2) || 1, new_decks);
@@ -98,6 +124,27 @@ get_decks(deck_ids).then(decks => {
 	console.log('MTGGoldifsh parsed', decks.length, 'decks');
 	decks = decks.map(deck => deck.filter(card => !options.ignore.includes(card.toLowerCase())));
 	now = Date.now();
+
+	if(options.rounds) {
+		let new_decks = [];
+		let cards = {};
+		for(let i = 0; i < +options.rounds; i++) {
+			console.log('ROUND', i);
+			new_decks.push(dichotomic(options.iterations, decks));
+		}
+
+		new_decks.forEach(deck => {
+			deck.forEach(card => {
+				if(!cards[card]) {
+					cards[card] = 1;
+				} else {
+					cards[card]++;
+				}
+			});
+		});
+
+		return console.log(Object.entries(cards).map(([k, v]) => `${v}\t${k}`).join('\n'));
+	}
 	return dichotomic(options.iterations, decks);
 });
 

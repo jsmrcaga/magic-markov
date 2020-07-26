@@ -1,6 +1,6 @@
 class Card {
 	constructor(name) {
-		this.count = 0;
+		this.count = 1;
 		this.name = name;
 		this.counters = {};
 		this.probs = [];
@@ -56,6 +56,8 @@ function compute(decks=[]) {
 		for(let card of deck) {
 			if(!cards[card]) {
 				cards[card] = new Card(card);
+			} else {
+				cards[card].count++;
 			}
 		}
 

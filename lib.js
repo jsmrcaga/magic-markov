@@ -16,7 +16,9 @@ function create_deck(decks, count=60, starting_card=null) {
 	// Compute probabilities etc
 	computed = compute(decks);
 	let new_deck = MarkovDeck(count, starting_card, computed);
-	return [...new_deck].map(c => c.name);
+	let deck = [...new_deck].map(c => c.name);
+	deck.cards = computed;
+	return deck;
 }
 
 const FORMATS = {
